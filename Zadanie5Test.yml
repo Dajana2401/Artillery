@@ -1,0 +1,39 @@
+config:
+  target: "https://postman-echo.com/"
+  phases:
+    - duration: 3
+      arrivalRate: 2
+      name: zadanie5 test
+  payload: 
+    - path: "keywords.csv"
+      fields: 
+      - "keyword1"
+      - "keyword2"
+      order: sequence
+  plugins: 
+    ensure: {}
+  ensure: 
+    thresholds:
+     - http.response_time.p95: 500
+    conditions: 
+      - expression: vusers.failed == 0
+      - expression: "http.request_rate >= 2 and http.response_time.max < 600"
+scenarios:
+  - name: Getting a resource
+    flow:
+      - get:
+          url: "{{ target }}get"
+      - post:
+          url: "{{ target }}post"
+          json:
+            postEcho: 'testEcho'
+            postEchoID: 'superTestyObciazeniowe'
+          capture:
+            - json: "$.json"
+              as: "request_Body"
+            - json: "$.headers.host"
+              as: "host"
+      - log: "JSON value of response is {{request_Body}}"
+      - log: "Host value from response is {{host}}"
+      - log: "Keyword1: {{ keyword1 }}"
+      - log: "Keyword2: {{ keyword2 }}"
